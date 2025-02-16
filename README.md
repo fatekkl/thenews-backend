@@ -1,9 +1,3 @@
-Aqui está a **documentação do README.md** completa para seu projeto, incluindo **descrição, configuração, endpoints e exemplos de uso**. 🚀  
-
----
-
-### 📌 **README.md**
-```markdown
 # 📰 TheNews Backend
 
 Este é o backend do **TheNews**, responsável por processar requisições recebidas periodicamente de um webhook, armazenando informações de usuários e posts no banco de dados **Cloudflare D1**.
@@ -211,14 +205,3 @@ GET /add_post?email=teste@email.com&id=post_2025-02-16
   "created_at": "2025-02-16T00:00:00.000Z"
 }
 ```
-
----
-
-## 🔧 **Contribuição**
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b minha-feature`)
-3. Commit suas mudanças (`git commit -m 'Adicionando nova feature'`)
-4. Push para a branch (`git push origin minha-feature`)
-5. Abra um Pull Request 🚀
-
----
