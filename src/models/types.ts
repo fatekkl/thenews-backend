@@ -1,10 +1,5 @@
 import { Env } from "../../worker-configuration";
 
-type HttpMethod = "get" | "post" | "put" | "delete" | "patch";
-
-
-
-
 export type Route = {
     method: string;
     path: string;
@@ -19,8 +14,6 @@ export interface Post {
     // outros campos, se houver
   }
   
-
-
 export interface User {
     id: string;
     email: string;
