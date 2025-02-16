@@ -1,25 +1,224 @@
-# Cloudflare Workers OpenAPI 3.1
+Aqui está a **documentação do README.md** completa para seu projeto, incluindo **descrição, configuração, endpoints e exemplos de uso**. 🚀  
 
-This is a Cloudflare Worker with OpenAPI 3.1 using [chanfana](https://github.com/cloudflare/chanfana) and [Hono](https://github.com/honojs/hono).
+---
 
-This is an example project made to be used as a quick start into building OpenAPI compliant Workers that generates the
-`openapi.json` schema automatically from code and validates the incoming request to the defined parameters or request body.
+### 📌 **README.md**
+```markdown
+# 📰 TheNews Backend
 
-## Get started
+Este é o backend do **TheNews**, responsável por processar requisições recebidas periodicamente de um webhook, armazenando informações de usuários e posts no banco de dados **Cloudflare D1**.
 
-1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.
-2. Clone this project and install dependencies with `npm install`
-3. Run `wrangler login` to login to your Cloudflare account in wrangler
-4. Run `wrangler deploy` to publish the API to Cloudflare Workers
+## 📌 **Sumário**
+- [📌 Visão Geral](#-visão-geral)
+- [🚀 Tecnologias Usadas](#-tecnologias-usadas)
+- [⚙️ Configuração do Projeto](#️-configuração-do-projeto)
+- [🛠️ Configuração do Banco D1](#️-configuração-do-banco-d1)
+- [📡 Endpoints Disponíveis](#-endpoints-disponíveis)
+- [📝 Exemplo de Uso](#-exemplo-de-uso)
+- [🔧 Contribuição](#-contribuição)
 
-## Project structure
+---
 
-1. Your main router is defined in `src/index.ts`.
-2. Each endpoint has its own file in `src/endpoints/`.
-3. For more information read the [chanfana documentation](https://chanfana.pages.dev/) and [Hono documentation](https://hono.dev/docs).
+## 📌 **Visão Geral**
+O backend recebe **requisições a cada 1 hora**, contendo os parâmetros:
+- **email** → Endereço de e-mail do usuário
+- **id** → Identificador único do post (exemplo: `post_2025-02-16`)
+- **utm_source, utm_medium, utm_campaign, utm_channel** → Informações opcionais de tracking
 
-## Development
+Com base nisso, o sistema:
+- **Verifica se o post já existe** → Se não, cadastra no banco.
+- **Verifica se o email já existe**:
+  - Se **sim**, **incrementa o número de aberturas** e atualiza a data de última abertura.
+  - Se **não**, **cadastra o usuário no banco**.
 
-1. Run `wrangler dev` to start a local instance of the API.
-2. Open `http://localhost:8787/` in your browser to see the Swagger interface where you can try the endpoints.
-3. Changes made in the `src/` folder will automatically trigger the server to reload, you only need to refresh the Swagger interface.
+---
+
+## 🚀 **Tecnologias Usadas**
+- **Cloudflare Workers** → Servidor sem necessidade de infraestrutura.
+- **Cloudflare D1** → Banco de dados relacional baseado em SQLite.
+- **TypeScript** → Código tipado e mais seguro.
+- **Wrangler** → CLI oficial do Cloudflare para desenvolvimento e deploy.
+
+---
+
+## ⚙️ **Configuração do Projeto**
+### **1️⃣ Clone o repositório**
+```sh
+git clone https://github.com/seu-usuario/thenews-backend.git
+cd thenews-backend
+```
+
+### **2️⃣ Instale as dependências**
+```sh
+npm install
+```
+
+### **3️⃣ Configure o Wrangler**
+**Edite o arquivo `wrangler.jsonc` para incluir o banco D1:**
+```jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thenews-backend",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-14",
+  "d1_databases": [
+    {
+      "binding": "D1_DB",
+      "database_name": "thenews-database",
+      "database_id": "SUA_DATABASE_ID"
+    }
+  ]
+}
+```
+Obtenha o `database_id` no painel do Cloudflare.
+
+### **4️⃣ Configure as variáveis de ambiente**
+Se precisar de variáveis sensíveis, configure com:
+```sh
+npx wrangler secret put MINHA_VARIAVEL
+```
+
+### **5️⃣ Rode o projeto em ambiente local**
+```sh
+npx wrangler dev
+```
+
+---
+
+## 🛠️ **Configuração do Banco D1**
+### **1️⃣ Criar tabelas**
+Se for a primeira vez rodando o projeto, crie as tabelas:
+
+```sh
+npx wrangler d1 execute thenews-database --local --command "
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    utm_channel TEXT,
+    openings INTEGER DEFAULT 0,
+    streak INTEGER DEFAULT 0,
+    last_open_date TEXT
+  );
+"
+```
+
+```sh
+npx wrangler d1 execute thenews-database --local --command "
+  CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY,
+    resource_id TEXT UNIQUE NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+"
+```
+
+### **2️⃣ Verificar se o banco foi criado corretamente**
+```sh
+npx wrangler d1 execute thenews-database --local --command "SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+---
+
+## 📡 **Endpoints Disponíveis**
+### 🔹 **1️⃣ Rota Principal (Webhook)**
+```http
+GET /
+```
+📌 **Descrição:**  
+Processa cada requisição do webhook, cadastrando **posts** e **usuários**.
+
+📌 **Parâmetros Query:**
+| Parâmetro     | Tipo   | Obrigatório | Descrição |
+|--------------|--------|------------|-------------|
+| `email`      | `string` | ✅ Sim | Email do usuário |
+| `id`         | `string` | ✅ Sim | ID único do post |
+| `utm_source` | `string` | ❌ Não | Origem da campanha |
+| `utm_medium` | `string` | ❌ Não | Meio da campanha |
+| `utm_campaign` | `string` | ❌ Não | Nome da campanha |
+| `utm_channel` | `string` | ❌ Não | Canal de tráfego |
+
+📌 **Exemplo de Requisição:**
+```
+GET /?email=teste@email.com&id=post_2025-02-16&utm_source=google&utm_medium=cpc&utm_campaign=promo&utm_channel=youtube
+```
+📌 **Exemplo de Resposta:**
+```json
+{
+  "user": { "success": true, "code": 201, "data": { "email": "teste@email.com" } },
+  "post": { "success": true, "post_id": 1, "resource_id": "post_2025-02-16", "created_at": "2025-02-16T00:00:00.000Z" }
+}
+```
+
+---
+
+### 🔹 **2️⃣ Criar Usuário**
+```http
+GET /add_user
+```
+📌 **Descrição:**  
+Cria um novo usuário.
+
+📌 **Parâmetros Query:**
+| Parâmetro     | Tipo   | Obrigatório | Descrição |
+|--------------|--------|------------|-------------|
+| `email`      | `string` | ✅ Sim | Email do usuário |
+| `utm_source` | `string` | ❌ Não | Origem da campanha |
+| `utm_medium` | `string` | ❌ Não | Meio da campanha |
+| `utm_campaign` | `string` | ❌ Não | Nome da campanha |
+| `utm_channel` | `string` | ❌ Não | Canal de tráfego |
+
+📌 **Exemplo de Requisição:**
+```
+GET /add_user?email=teste@email.com&utm_source=google&utm_medium=cpc&utm_campaign=promo&utm_channel=youtube
+```
+📌 **Exemplo de Resposta:**
+```json
+{
+  "success": true,
+  "code": 201,
+  "data": { "email": "teste@email.com" }
+}
+```
+
+---
+
+### 🔹 **3️⃣ Criar Post**
+```http
+GET /add_post
+```
+📌 **Descrição:**  
+Cria um novo post no banco de dados.
+
+📌 **Parâmetros Query:**
+| Parâmetro  | Tipo   | Obrigatório | Descrição |
+|------------|--------|------------|-------------|
+| `email`    | `string` | ✅ Sim | Email do usuário |
+| `id`       | `string` | ✅ Sim | ID único do post |
+
+📌 **Exemplo de Requisição:**
+```
+GET /add_post?email=teste@email.com&id=post_2025-02-16
+```
+📌 **Exemplo de Resposta:**
+```json
+{
+  "success": true,
+  "post_id": 1,
+  "resource_id": "post_2025-02-16",
+  "created_at": "2025-02-16T00:00:00.000Z"
+}
+```
+
+---
+
+## 🔧 **Contribuição**
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature (`git checkout -b minha-feature`)
+3. Commit suas mudanças (`git commit -m 'Adicionando nova feature'`)
+4. Push para a branch (`git push origin minha-feature`)
+5. Abra um Pull Request 🚀
+
+---
