@@ -1,7 +1,9 @@
-import getAllUsers from "../utils/getAllUsers";
+import getAllUsers from "utils/getAllUsers";
+import { Env } from "../../worker-configuration";
 
-async function checkEmail(email: string) {
-    const allUsers = await getAllUsers();
+
+async function checkEmail(email: string, env: Env) {
+    const allUsers = await getAllUsers(env);
 
     let repeated = false
 

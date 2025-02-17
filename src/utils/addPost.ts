@@ -1,14 +1,12 @@
 import { Post } from "../models/types";
 import { Env } from "../../worker-configuration";
+import getNow from "services/getNow";
 
 async function addPost(env: Env, resource_id: string): Promise<Post> {
   try {
     const query = `INSERT INTO posts (resource_id, created_at) VALUES (?, ?);`;
 
-    // 📌 Ajustando a data para UTC-3
-    const now = new Date();
-    now.setHours(now.getHours() - 3); // 🔹 Ajusta para UTC-3
-    const createdAt = now.toISOString().replace("T", " ").slice(0, 19); // Formato YYYY-MM-DD HH:MM:SS
+    const createdAt = getNow()
 
     // 🚀 Executa a query no D1
     const result = await env.D1_DB.prepare(query).bind(resource_id, createdAt).run();

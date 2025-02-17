@@ -28,3 +28,8 @@ export interface ApiResponse {
     data: Object,
     code: number
 }
+
+export interface LastOpenedResponse {
+    success: boolean;
+    last_open_date: string;
+  }
