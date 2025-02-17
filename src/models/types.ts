@@ -32,4 +32,9 @@ export interface ApiResponse {
 export interface LastOpenedResponse {
     success: boolean;
     last_open_date: string;
-  }
+}
+
+export interface StreakResponse {
+    success: boolean,
+    streak: number
+}
