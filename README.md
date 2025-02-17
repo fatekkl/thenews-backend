@@ -222,3 +222,19 @@ GET /add_post?email=teste@email.com&id=post_2025-02-16
 5. Abra um Pull Request 🚀
 
 ---
+
+
+## **TO DO List**  
+Uma pequena tabela, com anotações sobre tarefas que tenho que fazer, para minha organização. 😀
+
+### **Backend**  
+- [x] Criar estrutura inicial da API  
+- [x] Configurar TypeScript e Express  
+- [x] Estruturar a recepção dos dados da **beehiiv** para envio ao FrontEnd 
+- [x] Parou de encerrar a aplicação, quando o Post já existe. Agora está fazendo log no console, apenas avisando que o post já existe
+- [x] Criar rota que recebe os dados diretamente do Webhook do The News e retorna eles em JSON
+- [x] Requests repetidas do mesmo e-mail, representam uma abertura a mais daquele email, adicionar contador de aberturas, que aumenta a cada request daquele email
+- [x] Atualizar last_opened em users quando addPost() for executado 
+- [x] Resolver erros de lógica, na criação de tabelas & gerenciamento dos dados para criar streaks e openings
+- [ ] Requests repetidas do mesmo e-mail, em dias diferentes, representam uma streak a mais. Adicionar contador, que reseta a cada 24 horas sem requests.
+- [ ] Adicionar lógica na Streak
