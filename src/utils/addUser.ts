@@ -1,5 +1,6 @@
 import { ApiResponse } from "../models/types";
 import { Env } from "../../worker-configuration";
+import getNow from "services/getNow";
 
 async function addUser(
     env: Env,
@@ -15,14 +16,14 @@ async function addUser(
     }
 
     const query = `
-    INSERT INTO users (email, utm_source, utm_medium, utm_campaign, utm_channel, openings)
-    VALUES (?, ?, ?, ?, ?, ?);
+    INSERT INTO users (email, utm_source, utm_medium, utm_campaign, utm_channel, openings, streak, last_open_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
   `;
 
     try {
         const result = await env.D1_DB
             .prepare(query)
-            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, 1)
+            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, 1, 1, getNow())
             .run();
 
         if (!result.success) {
