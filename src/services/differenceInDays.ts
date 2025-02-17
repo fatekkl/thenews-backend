@@ -6,6 +6,7 @@ function differenceInDays(date1: string, date2: string): number {
     // Diferença em milissegundos
     const diffInMs = Math.abs(d2 - d1);
 
+    
     // Converter para dias
     return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 }
