@@ -9,6 +9,7 @@ import { Route } from "models/types";
 import { Env } from "../worker-configuration";
 import checkEmail from "services/checkEmail";
 import getNow from "services/getNow";
+import updateStreak from "utils/updateStreak";
 
 export const routes: Route[] = [
 
@@ -50,21 +51,21 @@ export const routes: Route[] = [
 
         if (emailExists) {
           // 🔹 Se o email existe, atualizamos os dados do usuário
-          const updateResult = await updateOpenings(email, env);
+          const updatedOpenings = await updateOpenings(email, env);
+          await updateStreak(email, env)
           await updateLastOpened(email, getNow(), env);
-          console.log("passou de lastopened")
-
+          
           return new Response(
-            JSON.stringify({ success: true, data: { openings: updateResult.data } }),
+            JSON.stringify({ success: true, data: { openings: updatedOpenings.data } }),
             {
-              status: updateResult.code,
+              status: 200,
               headers: { "Content-Type": "application/json" },
             }
           );
         } else {
           // 🔹 Se o email não existe, criamos o usuário
           const user = await registerUser(env, email, utm_source, utm_medium, utm_campaign, utm_channel);
-          await updateLastOpened(email, getNow(), env);
+          await updateStreak(email, env)
 
           return new Response(
             JSON.stringify({ user, post }),
