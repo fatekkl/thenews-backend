@@ -10,6 +10,8 @@ import { Env } from "../worker-configuration";
 import checkEmail from "services/checkEmail";
 import getNow from "services/getNow";
 import updateStreak from "utils/updateStreak";
+import getUtmSource from "utils/getUtmSource";
+import countUtmSource from "utils/countUtmSource";
 
 export const routes: Route[] = [
 
@@ -54,7 +56,7 @@ export const routes: Route[] = [
           const updatedOpenings = await updateOpenings(email, env);
           await updateStreak(email, env)
           await updateLastOpened(email, getNow(), env);
-          
+
           return new Response(
             JSON.stringify({ success: true, data: { openings: updatedOpenings.data } }),
             {
@@ -70,7 +72,7 @@ export const routes: Route[] = [
           return new Response(
             JSON.stringify({ user, post }),
             {
-              status: user.code,
+              status: 200,
               headers: { "Content-Type": "application/json" },
             }
           );
@@ -119,7 +121,7 @@ export const routes: Route[] = [
         const result = await registerUser(env, email, utm_source, utm_medium, utm_campaign, utm_channel);
 
         return new Response(JSON.stringify(result), {
-          status: result.code,
+          status: 200,
           headers: { "Content-Type": "application/json" },
         });
       } catch (error) {
@@ -207,10 +209,11 @@ export const routes: Route[] = [
     path: "/test_db",
     handler: async (request: Request, env: Env): Promise<Response> => {
       try {
-        const query = "SELECT 1 AS test"; // Teste simples para ver se o banco responde
-        const result = await env.D1_DB.prepare(query).all();
+        const utms = (await getUtmSource(env)).result
 
-        return new Response(JSON.stringify({ success: true, result }), {
+        const result = await countUtmSource(env, utms)
+
+        return new Response(JSON.stringify({ success: true, data: result }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -222,4 +225,31 @@ export const routes: Route[] = [
       }
     },
   },
+  {
+    method: "get",
+    path: "/get_utm",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+
+        const utms = (await getUtmSource(env)).result
+
+        return new Response(
+          JSON.stringify({ success: true, data: utms}),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro: ${error}` }),
+          {
+            status: 500, // 🔹 Agora o status está corretamente dentro do Response
+            headers: { "Content-Type": "application/json" } // 🔹 Headers agora estão corretamente configurados
+          }
+        );
+      }
+    }
+  }
+
 ];
