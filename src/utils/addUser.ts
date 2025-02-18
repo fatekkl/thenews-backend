@@ -1,4 +1,4 @@
-import { ApiResponse } from "../models/types";
+import { User } from "models/types";
 import { Env } from "../../worker-configuration";
 import getNow from "services/getNow";
 
@@ -9,7 +9,7 @@ async function addUser(
     utm_medium: string,
     utm_campaign: string,
     utm_channel: string
-): Promise<ApiResponse> {
+): Promise<User> {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email || !emailRegex.test(email)) {
         throw { success: false, data: "Email inválido", code: 400 };
@@ -20,10 +20,15 @@ async function addUser(
     VALUES (?, ?, ?, ?, ?, ?, ?, ?);
   `;
 
+
+    const last_open_date = getNow()
+    const streak = 1
+    const openings = 1
+
     try {
         const result = await env.D1_DB
             .prepare(query)
-            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, 1, 1, getNow())
+            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, openings, streak, last_open_date)
             .run();
 
         if (!result.success) {
@@ -31,7 +36,7 @@ async function addUser(
         }
 
         console.log("Usuário inserido na tabela com sucesso!");
-        return { success: true, data: { email, utm_source, utm_medium, utm_campaign, utm_channel }, code: 201 };
+        return { success: true, email, utm_source,utm_medium,utm_campaign, utm_channel, openings, streak, last_open_date };
     } catch (error: any) {
         throw { success: false, data: { message: `Erro ao inserir usuário: ${error.message}` }, code: 500 };
     }
@@ -44,7 +49,7 @@ async function registerUser(
     utm_medium: string,
     utm_campaign: string,
     utm_channel: string
-): Promise<ApiResponse> {
+): Promise<User> {
     try {
         return await addUser(env, email, utm_source, utm_medium, utm_campaign, utm_channel);
     } catch (error) {

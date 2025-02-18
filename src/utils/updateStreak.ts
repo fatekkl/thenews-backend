@@ -17,9 +17,11 @@ export default async function updateStreak(email: string, env: Env): Promise<Str
         const lastOpened = userData.last_open_date;
         const previousStreak = (await getStreak(email, env)).streak
 
+
         const totalDiff = differenceInDays(currentDate, lastOpened);
         const sundaysCount = countSundaysBetween(lastOpened, currentDate);
         const activeGap = totalDiff - sundaysCount;
+        console.log(`${activeGap}: activeGap \n totalDiff: ${totalDiff}`)
 
         console.log(`last_open_date: ${lastOpened}`);
         console.log(`currentDate: ${currentDate}`);
