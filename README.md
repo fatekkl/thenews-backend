@@ -219,7 +219,10 @@ Uma pequena tabela, com anotações sobre tarefas que tenho que fazer, para minh
 - [x] Requests repetidas do mesmo e-mail, representam uma abertura a mais daquele email, adicionar contador de aberturas, que aumenta a cada request daquele email
 - [x] Atualizar last_opened em users quando addPost() for executado 
 - [x] Resolver erros de lógica, na criação de tabelas & gerenciamento dos dados para criar streaks e openings
-- [] Verificar forma que os dados estão sendo salvos, relacionados a UTMS 
+- [x] Verificar forma que os dados estão sendo salvos, relacionados a UTMS 
 - [x] Requests repetidas do mesmo e-mail, em dias diferentes, representam uma streak a mais. Adicionar contador, que reseta a cada 24 horas sem requests.
 - [x] Adicionar lógica na Streak
-- [ ] Aplicar boas práticas e criar classes mais fáceis de entender
+- [x] Aplicar boas práticas e criar classes mais fáceis de entender
+- [x] Salvar todos os posts lidos do usuário
+- [ ] Validar dados de forma precisa, Email já esta validado, validar ID
+- [ ] Revisar toda documentação quando o projeto encerrar
