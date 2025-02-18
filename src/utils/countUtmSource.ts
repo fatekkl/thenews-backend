@@ -1,10 +1,10 @@
-import { UtmSourceResponse } from "models/types";
 import { Env } from "../../worker-configuration";
+import capitalizeFirstLetter from "services/capitalizeFirstLetter";
 
 export default async function countUtmSource(env: Env, utms: string[]) {
 
     try {
-        const utms_counter = await Promise.all(
+        const utmsToMap = await Promise.all(
             utms.map(async (utm: string) => {
                 const result = await env.D1_DB.prepare(
                     "SELECT COUNT(*) AS total FROM users WHERE utm_source = ?"
@@ -12,13 +12,13 @@ export default async function countUtmSource(env: Env, utms: string[]) {
     
                 return {
                     success: true,
-                    name: utm,
+                    name: capitalizeFirstLetter(utm),
                     counter: result.results[0].total
                 };
             })
         );
 
-        return { success: true, results: utms_counter };
+        return utmsToMap
 
     } catch (error) {
         return (`Erro ao contar UTMS: ${error.message}`)

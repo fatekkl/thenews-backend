@@ -3,18 +3,18 @@ import { getLastOpened } from "./getLastOpened";
 import { Env } from "../../worker-configuration";
 import differenceInDays from "services/differenceInDays";
 import { getStreak } from "./getStreak";
-import { StreakResponse } from "models/types";
 import { countSundaysBetween } from "services/countSundaysBetween";
 
 
 
-export default async function updateStreak(email: string, env: Env): Promise<StreakResponse> {
+export default async function updateStreak(email: string, env: Env) {
 
     try {
-        const currentDate = getNow();
+        
 
         const userData = await getLastOpened(email, env);
         const lastOpened = userData.last_open_date;
+        const currentDate = getNow();
         const previousStreak = (await getStreak(email, env)).streak
 
 

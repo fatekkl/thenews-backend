@@ -9,8 +9,8 @@ export default async function getUtmSource(env: Env): Promise<UtmSourceResponse>
   const { results } = await env.D1_DB.prepare(query).all();
 
   const utmSourcesList = results
-    .map((row: { utm_source: string | null }) => row.utm_source?.trim())
-    .filter((utm) => utm && utm.length > 0)
+    .map((row: { utm_source: string | null }) => row.utm_source?.trim()) // Remove espaços extras
+    .filter((utm) => utm && utm.length > 0) // Remove strings vazias e valores null
    ;
 
   return {

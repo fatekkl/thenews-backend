@@ -12,6 +12,8 @@ import getNow from "services/getNow";
 import updateStreak from "utils/updateStreak";
 import getUtmSource from "utils/getUtmSource";
 import countUtmSource from "utils/countUtmSource";
+import { getPost } from "utils/getPost";
+import addReadPost from "utils/addReadPost";
 
 export const routes: Route[] = [
 
@@ -56,6 +58,7 @@ export const routes: Route[] = [
           const updatedOpenings = await updateOpenings(email, env);
           await updateStreak(email, env)
           await updateLastOpened(email, getNow(), env);
+          await addReadPost(email, resource_id, env)
 
           return new Response(
             JSON.stringify({ success: true, data: { openings: updatedOpenings.data } }),
@@ -68,6 +71,7 @@ export const routes: Route[] = [
           // 🔹 Se o email não existe, criamos o usuário
           const user = await registerUser(env, email, utm_source, utm_medium, utm_campaign, utm_channel);
           await updateStreak(email, env)
+          await addReadPost(email, resource_id, env)
 
           return new Response(
             JSON.stringify({ user, post }),
@@ -80,7 +84,7 @@ export const routes: Route[] = [
       } catch (error) {
         console.error("Erro na rota /:", error);
         return new Response(
-          JSON.stringify({ success: false, message: `Erro interno: ${error}` }),
+          JSON.stringify({ success: false, message: error }),
           {
             status: 500,
             headers: { "Content-Type": "application/json" },
@@ -208,12 +212,14 @@ export const routes: Route[] = [
     method: "get",
     path: "/test_db",
     handler: async (request: Request, env: Env): Promise<Response> => {
+      const url = new URL(request.url)
+
+      const resource_id = url.searchParams.get("id");
+
       try {
-        const utms = (await getUtmSource(env)).result
+        const post = await getPost(resource_id, env)
 
-        const result = await countUtmSource(env, utms)
-
-        return new Response(JSON.stringify({ success: true, data: result }), {
+        return new Response(JSON.stringify({ success: true, data: post }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -231,10 +237,11 @@ export const routes: Route[] = [
     handler: async (request: Request, env: Env): Promise<Response> => {
       try {
 
-        const utms = (await getUtmSource(env)).result
+        const utmsName = (await getUtmSource(env)).result
+        const utmsCount = await countUtmSource(env, utmsName)
 
         return new Response(
-          JSON.stringify({ success: true, data: utms}),
+          JSON.stringify({ success: true, data: utmsCount }),
           {
             status: 200,
             headers: { "Content-Type": "application/json" }

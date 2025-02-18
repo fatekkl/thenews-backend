@@ -1,7 +1,6 @@
 import { Env } from "../../worker-configuration";
-import { ApiResponse } from "../models/types";
 
-async function updateLastOpened(email: string, date: string, env: Env): Promise<ApiResponse> {
+async function updateLastOpened(email: string, date: string, env: Env) {
   const query = "UPDATE users SET last_open_date = ? WHERE email = ?";
   
   try {

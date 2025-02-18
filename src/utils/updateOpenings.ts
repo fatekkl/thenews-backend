@@ -1,7 +1,6 @@
-import { ApiResponse } from "../models/types";
 import { Env } from "../../worker-configuration";
 
-async function updateOpenings(email: string, env: Env): Promise<ApiResponse> {
+async function updateOpenings(email: string, env: Env) {
   const query = "UPDATE users SET openings = openings + 1 WHERE email = ?;";
   
   try {

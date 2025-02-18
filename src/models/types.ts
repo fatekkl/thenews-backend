@@ -7,14 +7,11 @@ export type Route = {
 };
 
 export interface Post {
-    success: boolean;
-    post_id: number;
+    success: boolean
     resource_id: string;
     created_at: string;
+}
 
-    // outros campos, se houver
-  }
-  
 export interface User {
     success: boolean;
     email: string;
