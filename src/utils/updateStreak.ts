@@ -36,6 +36,17 @@ export default async function updateStreak(email: string, env: Env): Promise<Str
         } else {
             newStreak = 0;
         }
+        console.log("streak pré update:", previousStreak)
+        console.log("streak pós update:",newStreak)
+
+        const updateQuery = `
+            UPDATE users 
+            SET streak = ?, last_open_date = ? 
+            WHERE email = ?;
+        `;
+
+        
+        await env.D1_DB.prepare(updateQuery).bind(newStreak, currentDate, email).run();
 
         return {success: true, streak: newStreak }
     } catch (error: any) {
