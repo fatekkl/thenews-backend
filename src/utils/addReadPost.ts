@@ -1,3 +1,4 @@
+import getNow from "services/getNow";
 import { Env } from "../../worker-configuration";
 import { getPost } from "./getPost";
 
@@ -28,7 +29,7 @@ export default async function addReadPost(email: string, resource_id: string, en
 
         // Adiciona o novo postId apenas se ainda não estiver no array
         if (!readPosts.some(post => post.postId === resource_id)) {
-            readPosts.push({ postId: resource_id, date: new Date().toISOString() });
+            readPosts.push({ postId: resource_id, created_at: getNow() });
 
             // Atualiza o banco de dados com o novo JSON
             await env.D1_DB.prepare(

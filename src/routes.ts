@@ -14,6 +14,7 @@ import getUtmSource from "utils/getUtmSource";
 import countUtmSource from "utils/countUtmSource";
 import { getPost } from "utils/getPost";
 import addReadPost from "utils/addReadPost";
+import getReadPosts from "utils/getReadPosts";
 
 export const routes: Route[] = [
 
@@ -255,6 +256,36 @@ export const routes: Route[] = [
             headers: { "Content-Type": "application/json" } // 🔹 Headers agora estão corretamente configurados
           }
         );
+      }
+    }
+  },
+  {
+    method: "get",
+    path: "/get_readPosts",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+        const url = new URL(request.url)
+
+        const email = url.searchParams.get("email");
+
+        const readPosts = await getReadPosts(email, env)
+
+
+        return new Response(
+          JSON.stringify({ success: true, data: readPosts }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro: ${error}` }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
       }
     }
   }
