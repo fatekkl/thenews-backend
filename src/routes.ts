@@ -15,6 +15,8 @@ import countUtmSource from "utils/countUtmSource";
 import { getPost } from "utils/getPost";
 import addReadPost from "utils/addReadPost";
 import getReadPosts from "utils/getReadPosts";
+import { getStreak } from "utils/getStreak";
+import { getOpenings } from "utils/getOpenings";
 
 export const routes: Route[] = [
 
@@ -273,6 +275,66 @@ export const routes: Route[] = [
 
         return new Response(
           JSON.stringify({ success: true, data: readPosts }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro: ${error}` }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      }
+    }
+  },
+  {
+    method: "get",
+    path: "/get_streak",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+        const url = new URL(request.url)
+
+        const email = url.searchParams.get("email");
+
+        const streak = (await getStreak(email, env)).streak
+
+
+        return new Response(
+          JSON.stringify({ success: true, data: streak }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro: ${error}` }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      }
+    }
+  },
+  {
+    method: "get",
+    path: "/get_openings",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+        const url = new URL(request.url) 
+
+        const email = url.searchParams.get("email");
+
+        const openings = (await getOpenings(email, env)).openings
+
+
+        return new Response(
+          JSON.stringify({ success: true, data: openings }),
           {
             status: 200,
             headers: { "Content-Type": "application/json" }
