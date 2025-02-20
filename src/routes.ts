@@ -10,13 +10,15 @@ import { Env } from "../worker-configuration";
 import checkEmail from "services/checkEmail";
 import getNow from "services/getNow";
 import updateStreak from "utils/updateStreak";
-import getUtmSource from "utils/getUtmSource";
-import countUtmSource from "utils/countUtmSource";
+import getUtmSource from "utils/getUtm";
+import countUtmSource from "utils/countUtm";
 import { getPost } from "utils/getPost";
 import addReadPost from "utils/addReadPost";
 import getReadPosts from "utils/getReadPosts";
 import { getStreak } from "utils/getStreak";
 import { getOpenings } from "utils/getOpenings";
+import getUtms from "utils/getUtm";
+import countUtms from "utils/countUtm";
 
 export const routes: Route[] = [
 
@@ -238,10 +240,14 @@ export const routes: Route[] = [
     method: "get",
     path: "/get_utm",
     handler: async (request: Request, env: Env): Promise<Response> => {
+      const url = new URL(request.url)
+
+      const utm_name = url.searchParams.get("utm_name");
+
       try {
 
-        const utmsName = (await getUtmSource(env)).result
-        const utmsCount = await countUtmSource(env, utmsName)
+        const utmsName = (await getUtms(env, utm_name)).result
+        const utmsCount = await countUtms(env, utmsName, utm_name)
 
         return new Response(
           JSON.stringify({ success: true, data: utmsCount }),

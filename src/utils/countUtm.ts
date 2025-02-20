@@ -1,13 +1,13 @@
 import { Env } from "../../worker-configuration";
 import capitalizeFirstLetter from "services/capitalizeFirstLetter";
 
-export default async function countUtmSource(env: Env, utms: string[]) {
+export default async function countUtms(env: Env, utms: string[], utm_name: string) {
 
     try {
         const utmsToMap = await Promise.all(
             utms.map(async (utm: string) => {
                 const result = await env.D1_DB.prepare(
-                    "SELECT COUNT(*) AS total FROM users WHERE utm_source = ?"
+                    `SELECT COUNT(*) AS total FROM users WHERE ${utm_name} = ?`
                 ).bind(utm).all();
     
                 return {

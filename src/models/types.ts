@@ -35,7 +35,7 @@ export interface StreakResponse {
     streak: number
 }
 
-export interface UtmSourceResponse {
+export interface UtmResponse {
     success: boolean,
     result: string[]
 }
