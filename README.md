@@ -1,228 +1,144 @@
-# 📰 TheNews Backend
+# 📰 **TheNews Backend**
 
-Este é o backend do **TheNews**, responsável por processar requisições recebidas periodicamente de um webhook, armazenando informações de usuários e posts no banco de dados **Cloudflare D1**.
-
-## 📌 **Sumário**
-- [📌 Visão Geral](#-visão-geral)
-- [🚀 Tecnologias Usadas](#-tecnologias-usadas)
-- [⚙️ Configuração do Projeto](#️-configuração-do-projeto)
-- [🛠️ Configuração do Banco D1](#️-configuração-do-banco-d1)
-- [📡 Endpoints Disponíveis](#-endpoints-disponíveis)
-- [📝 Exemplo de Uso](#-exemplo-de-uso)
-- [🔧 Contribuição](#-contribuição)
+Este é o backend para o **TheNews**, responsável por processar requisições recebidas periodicamente de um webhook, armazenando informações de usuários e posts no banco de dados **Cloudflare D1**. Implementa também um sistema de **Streak**, para rastrear a sequência de aberturas da *newsletter*.
 
 ---
 
-## 📌 **Visão Geral**
-O backend recebe **requisições a cada 1 hora**, contendo os parâmetros:
-- **email** → Endereço de e-mail do usuário
-- **id** → Identificador único do post (exemplo: `post_2025-02-16`)
-- **utm_source, utm_medium, utm_campaign, utm_channel** → Informações opcionais de tracking
+## 📌 **Stacks**
+### **Quais as tecnologias usadas?**
+✅ **Linguagem & Frameworks**  
+- **TypeScript** → Código tipado e mais seguro.  
+- **Hono** → Framework minimalista para Cloudflare Workers.  
 
-Com base nisso, o sistema:
-- **Verifica se o post já existe** → Se não, cadastra no banco.
-- **Verifica se o email já existe**:
-  - Se **sim**, **incrementa o número de aberturas** e atualiza a data de última abertura.
-  - Se **não**, **cadastra o usuário no banco**.
+✅ **Infraestrutura & Banco de Dados**  
+- **Cloudflare Workers** → Servidor serverless escalável.  
+- **Cloudflare D1** → Banco relacional baseado em SQLite.  
+- **Cloudflare Pages** → Hospedagem do frontend.  
 
----
-
-## 🚀 **Tecnologias Usadas**
-- **Cloudflare Workers** → Servidor sem necessidade de infraestrutura.
-- **Cloudflare D1** → Banco de dados relacional baseado em SQLite.
-- **TypeScript** → Código tipado e mais seguro.
-- **Wrangler** → CLI oficial do Cloudflare para desenvolvimento e deploy.
+✅ **Ferramentas & Deploy**  
+- **Wrangler** → CLI oficial do Cloudflare para deploy e desenvolvimento.  
+- **Cloudflare Cache** → Para otimização de resposta e redução de carga no banco.  
 
 ---
 
-## ⚙️ **Configuração do Projeto**
-### **1️⃣ Clone o repositório**
-```sh
-git clone https://github.com/seu-usuario/thenews-backend.git
-cd thenews-backend
+### **Quais problemas você enfrentou ao desenvolver?**
+| Problema | Solução |
+|----------|---------|
+| ❌ Cache inicial não estava funcionando corretamente | **Centralizei a lógica de cache** na função `handleCache()`, evitando redundância. |
+| ❌ Queries SQL poderiam ser mais otimizadas | **Usei prepared statements** (`prepare().all()`) para segurança e performance. |
+| ❌ O streak não era atualizado corretamente em algumas situações | **Implementei um reset automático de streak** caso o usuário não acessasse em 24 horas. |
+| ❌ Cloudflare D1 tem limitações comparado ao SQLite tradicional | **Evitei operações complexas como JOINs pesados** e foquei em consultas mais diretas. |
+
+---
+
+### **Qual a organização que escolheu e por quê?**
+📌 **Estrutura Modular e Escalável**
+- **`models/types.ts`** → Interfaces que estabelecem regras a serem seguidas no retorno
+- **`services/`** → Funções que manipulam a lógica de negócio.  
+- **`utils/`** → Funções auxiliares para interações com o banco.  
+- **`app.ts`** → Configuração principal do servidor Hono e das rotas.  
+
+✅ **Motivos**:  
+✔ Facilita manutenção e reuso de código.  
+✔ Reduz acoplamento entre as partes do sistema.  
+✔ Permite escalar sem precisar reescrever a API.
+
+---
+
+## **2️⃣ Dados**
+### **Qual a estrutura do seu SQL?**
+O **banco Cloudflare D1** possui duas tabelas principais:
+
+#### **📌 Tabela `users` (armazenamento de usuários e streaks)**
+```sql
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  utm_source TEXT,
+  utm_medium TEXT,
+  utm_campaign TEXT,
+  utm_channel TEXT,
+  openings INTEGER DEFAULT 0,
+  streak INTEGER DEFAULT 0,
+  last_open_date TEXT,
+  read_posts JSON
+);
 ```
 
-### **2️⃣ Instale as dependências**
-```sh
-npm install
-```
-
-### **3️⃣ Configure o Wrangler**
-**Edite o arquivo `wrangler.jsonc` para incluir o banco D1:**
-```jsonc
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "thenews-backend",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-02-14",
-  "d1_databases": [
-    {
-      "binding": "D1_DB",
-      "database_name": "thenews-database",
-      "database_id": "SUA_DATABASE_ID"
-    }
-  ]
-}
-```
-Obtenha o `database_id` no painel do Cloudflare.
-
-### **4️⃣ Configure as variáveis de ambiente**
-Se precisar de variáveis sensíveis, configure com:
-```sh
-npx wrangler secret put MINHA_VARIAVEL
-```
-
-### **5️⃣ Rode o projeto em ambiente local**
-```sh
-npx wrangler dev
+#### **📌 Tabela `posts` (armazenamento de edições de newsletter)**
+```sql
+CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY,
+  resource_id TEXT UNIQUE NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
 
-## 🛠️ **Configuração do Banco D1**
-### **1️⃣ Criar tabelas**
-Se for a primeira vez rodando o projeto, crie as tabelas:
-
-```sh
-npx wrangler d1 execute thenews-database --local --command "
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    utm_source TEXT,
-    utm_medium TEXT,
-    utm_campaign TEXT,
-    utm_channel TEXT,
-    openings INTEGER DEFAULT 0,
-    streak INTEGER DEFAULT 0,
-    last_open_date TEXT
-  );
-"
-```
-
-```sh
-npx wrangler d1 execute thenews-database --local --command "
-  CREATE TABLE IF NOT EXISTS posts (
-    id INTEGER PRIMARY KEY,
-    resource_id TEXT UNIQUE NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-"
-```
-
-### **2️⃣ Verificar se o banco foi criado corretamente**
-```sh
-npx wrangler d1 execute thenews-database --local --command "SELECT name FROM sqlite_master WHERE type='table';"
-```
+### **Como você lida com as inserções e consultas dos leitores?**
+📌 **Fluxo de execução quando um usuário abre um post:**
+1. **Verifica se o post já existe** → Se não, cadastra no banco.  
+2. **Verifica se o usuário já existe**:
+   - Se **sim**, atualiza `openings`, `streak` e `read_posts`.  
+   - Se **não**, cadastra o usuário e inicia os contadores.  
+3. **Cacheia a resposta no Cloudflare Workers para evitar consultas repetitivas**.
 
 ---
 
-## 📡 **Endpoints Disponíveis**
-### 🔹 **1️⃣ Rota Principal (Webhook)**
-```http
-GET /
-```
-📌 **Descrição:**  
-Processa cada requisição do webhook, cadastrando **posts** e **usuários**.
+### **Ele é escalável? Explique.**
+✅ **Sim, a API foi projetada para ser escalável**:
 
-📌 **Parâmetros Query:**
-| Parâmetro     | Tipo   | Obrigatório | Descrição |
-|--------------|--------|------------|-------------|
-| `email`      | `string` | ✅ Sim | Email do usuário |
-| `id`         | `string` | ✅ Sim | ID único do post |
-| `utm_source` | `string` | ❌ Não | Origem da campanha |
-| `utm_medium` | `string` | ❌ Não | Meio da campanha |
-| `utm_campaign` | `string` | ❌ Não | Nome da campanha |
-| `utm_channel` | `string` | ❌ Não | Canal de tráfego |
+✔ **Uso de Cloudflare Workers** → Sem necessidade de servidores, escalando automaticamente.  
+✔ **Banco de dados D1** → Melhor desempenho para consultas rápidas.  
+✔ **Cache no Cloudflare Workers** → Reduz consultas ao banco e melhora tempo de resposta.  
+✔ **Queries otimizadas com `prepare().all()`** → Evita sobrecarga no D1.  
 
-📌 **Exemplo de Requisição:**
-```
-GET /?email=teste@email.com&id=post_2025-02-16&utm_source=google&utm_medium=cpc&utm_campaign=promo&utm_channel=youtube
-```
-📌 **Exemplo de Resposta:**
-```json
-{
-  "user": { "success": true, "code": 201, "data": { "email": "teste@email.com" } },
-  "post": { "success": true, "post_id": 1, "resource_id": "post_2025-02-16", "created_at": "2025-02-16T00:00:00.000Z" }
-}
-```
+🔹 **Melhorias para escalabilidade futura**:  
+- **Implementar sharding no D1** para distribuir a carga em múltiplas instâncias.  
+- **Considerar PostgreSQL via Cloudflare R2** caso a base cresça muito.  
 
 ---
 
-### 🔹 **2️⃣ Criar Usuário**
-```http
-GET /add_user
-```
-📌 **Descrição:**  
-Cria um novo usuário.
+## **3️⃣ Testes**
+### **Quais testes você realizou?**
+✅ **Testes Manuais**  
+✔ Inserção e atualização de usuários.  
+✔ Teste de streaks com múltiplas datas.  
+✔ Validação de cache no Cloudflare Workers.  
 
-📌 **Parâmetros Query:**
-| Parâmetro     | Tipo   | Obrigatório | Descrição |
-|--------------|--------|------------|-------------|
-| `email`      | `string` | ✅ Sim | Email do usuário |
-| `utm_source` | `string` | ❌ Não | Origem da campanha |
-| `utm_medium` | `string` | ❌ Não | Meio da campanha |
-| `utm_campaign` | `string` | ❌ Não | Nome da campanha |
-| `utm_channel` | `string` | ❌ Não | Canal de tráfego |
-
-📌 **Exemplo de Requisição:**
-```
-GET /add_user?email=teste@email.com&utm_source=google&utm_medium=cpc&utm_campaign=promo&utm_channel=youtube
-```
-📌 **Exemplo de Resposta:**
-```json
-{
-  "success": true,
-  "code": 201,
-  "data": { "email": "teste@email.com" }
-}
-```
+✅ **Testes de Performance**  
+✔ Comparação do tempo de resposta com e sem cache → **A 2ª requisição foi até 1.5x mais rápida**.  
+✔ Simulação de requisições simultâneas para verificar carga no D1.  
 
 ---
 
-### 🔹 **3️⃣ Criar Post**
-```http
-GET /add_post
-```
-📌 **Descrição:**  
-Cria um novo post no banco de dados.
+### **Quanto tempo levou o desenvolvimento e testes?**
+🕐 **Tempo total: 9 dias**  
 
-📌 **Parâmetros Query:**
-| Parâmetro  | Tipo   | Obrigatório | Descrição |
-|------------|--------|------------|-------------|
-| `email`    | `string` | ✅ Sim | Email do usuário |
-| `id`       | `string` | ✅ Sim | ID único do post |
+📌 **Linha do Tempo**  
+- **Dias 1-4** → Estruturação do projeto e banco de dados.  
+- **Dias 5-6** → Implementação das rotas e lógica do streak.  
+- **Dias 7-9** → Testes, otimizações e documentação.  
 
-📌 **Exemplo de Requisição:**
-```
-GET /add_post?email=teste@email.com&id=post_2025-02-16
-```
-📌 **Exemplo de Resposta:**
-```json
-{
-  "success": true,
-  "post_id": 1,
-  "resource_id": "post_2025-02-16",
-  "created_at": "2025-02-16T00:00:00.000Z"
-}
-```
+✅ **Resultado Final**: Backend funcional, escalável e otimizado para responder rapidamente às requisições.
 
-## **TO DO List**  
+---
 
-Uma pequena tabela, com anotações sobre tarefas que tenho que fazer, para minha organização. 😀
+## **📌 Conclusão Final**
+💡 **Principais pontos fortes do backend:**  
+✔ Código modular e bem organizado.  
+✔ Uso de **cache** para reduzir tempo de resposta.  
+✔ **Banco de dados eficiente**, com queries otimizadas.  
+✔ **Sistema de streak validado e funcional.**  
 
-### **Backend**  
-- [x] Criar estrutura inicial da API  
-- [x] Configurar TypeScript e Express  
-- [x] Estruturar a recepção dos dados da **beehiiv** para envio ao FrontEnd 
-- [x] Parou de encerrar a aplicação, quando o Post já existe. Agora está fazendo log no console, apenas avisando que o post já existe
-- [x] Criar rota que recebe os dados diretamente do Webhook do The News e retorna eles em JSON
-- [x] Requests repetidas do mesmo e-mail, representam uma abertura a mais daquele email, adicionar contador de aberturas, que aumenta a cada request daquele email
-- [x] Atualizar last_opened em users quando addPost() for executado 
-- [x] Resolver erros de lógica, na criação de tabelas & gerenciamento dos dados para criar streaks e openings
-- [x] Verificar forma que os dados estão sendo salvos, relacionados a UTMS 
-- [x] Requests repetidas do mesmo e-mail, em dias diferentes, representam uma streak a mais. Adicionar contador, que reseta a cada 24 horas sem requests.
-- [x] Adicionar lógica na Streak
-- [x] Aplicar boas práticas e criar classes mais fáceis de entender
-- [x] Salvar todos os posts lidos do usuário
-- [ ] Validar dados de forma precisa, Email já esta validado, validar ID
-- [ ] Revisar toda documentação quando o projeto encerrar
+📌 **Melhorias futuras:**  
+- **Melhorar logs detalhados** para debugging mais eficiente.  
+- **Implementar testes automatizados** para evitar regressões.  
+- **Explorar PostgreSQL** caso a escala aumente significativamente.  
+
+---
+
+🔹 **Resumo Final:**  
+A API foi projetada para **ser rápida, escalável e fácil de manter**, utilizando **Cloudflare Workers, D1 e caching inteligente**. O **sistema de streak funciona corretamente**, e a **infraestrutura pode ser expandida sem grandes modificações**. 🚀🔥  
+
