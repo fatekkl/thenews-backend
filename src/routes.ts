@@ -48,13 +48,8 @@ export const routes: Route[] = [
           );
         }
 
-        console.log(
-          `/ chamado com GET | email: ${email}, resource_id: ${resource_id}, utm_source: ${utm_source}, utm_medium: ${utm_medium}, utm_campaign: ${utm_campaign}, utm_channel: ${utm_channel}`
-        );
-
         // ✅ Criamos ou verificamos se o post já existe
         const post = await addPost(env, resource_id);
-
         // ✅ Verificamos se o email já existe no banco
         const emailExists = await checkEmail(email, env)
 

@@ -9,7 +9,6 @@ export type Route = {
 export interface Post {
     success: boolean
     resource_id: string;
-    created_at: string;
 }
 
 export interface User {

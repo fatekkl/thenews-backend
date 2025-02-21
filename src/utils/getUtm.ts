@@ -12,7 +12,6 @@ export default async function getUtms(env: Env, utm: string): Promise<UtmRespons
     .map((row: Record<string, string | null>) => row[utm]?.trim()) // Usa row[utm] para acessar a coluna dinamicamente
     .filter((utmValue) => utmValue && utmValue.length > 0); // Remove valores null e strings vazias
 
-  console.log(utmsList);
   return {
     success: true,
     result: utmsList, // Retorna no formato correto
