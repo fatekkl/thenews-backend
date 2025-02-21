@@ -10,8 +10,6 @@ import { Env } from "../worker-configuration";
 import checkEmail from "services/checkEmail";
 import getNow from "services/getNow";
 import updateStreak from "utils/updateStreak";
-import getUtmSource from "utils/getUtm";
-import countUtmSource from "utils/countUtm";
 import { getPost } from "utils/getPost";
 import addReadPost from "utils/addReadPost";
 import getReadPosts from "utils/getReadPosts";
