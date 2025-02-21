@@ -17,6 +17,7 @@ import { getStreak } from "utils/getStreak";
 import { getOpenings } from "utils/getOpenings";
 import getUtms from "utils/getUtm";
 import countUtms from "utils/countUtm";
+import { getUser } from "utils/getUser";
 
 // Criamos o app Hono
 const app = new Hono<{ Bindings: Env }>();
@@ -187,6 +188,34 @@ app.get("/get_utm", async (c) =>
     return c.json({ success: true, data: utmsCount });
   })
 );
+
+app.get("/get_user", async (c) =>
+  handleCache(c, async () => { // Adicionado return para garantir a resposta
+    try {
+      const emailInput = c.req.query("email");
+
+      if (!emailInput) {
+        console.error("❌ Erro: Email não foi fornecido.");
+        return c.json(
+          { success: false, message: "O parâmetro 'email' é obrigatório." },
+          400
+        );
+      }
+
+      const env = c.env;
+      const email = await getUser(emailInput, env);
+
+      return c.json({ success: true, data: email });
+    } catch (error) {
+      console.error("❌ Erro ao buscar usuário:", error);
+      return c.json(
+        { success: false, message: "Erro interno no servidor." },
+        500
+      );
+    }
+  })
+);
+
 
 // Exporta o app Hono
 export default app;

@@ -1,6 +1,5 @@
 import { User } from "models/types";
 import { Env } from "../../worker-configuration";
-import getNow from "services/getNow";
 
 async function addUser(
     env: Env,
@@ -51,7 +50,7 @@ async function registerUser(
     try {
         return await addUser(env, email, utm_source, utm_medium, utm_campaign, utm_channel);
     } catch (error) {
-        throw error;
+        throw `Falha ao adicionar usuário: ${error.message}`;
     }
 }
 

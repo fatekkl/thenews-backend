@@ -17,6 +17,7 @@ import { getStreak } from "utils/getStreak";
 import { getOpenings } from "utils/getOpenings";
 import getUtms from "utils/getUtm";
 import countUtms from "utils/countUtm";
+import { getUser } from "utils/getUser";
 
 export const routes: Route[] = [
 
@@ -349,6 +350,37 @@ export const routes: Route[] = [
         )
       }
     }
+  },
+  {
+    method: "get",
+    path: "/get_user",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+        const url = new URL(request.url) 
+
+        const email = url.searchParams.get("email");
+
+        const user = (await getUser(email, env))
+
+
+        return new Response(
+          JSON.stringify({ success: true, data: user }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro: ${error}` }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        )
+      }
+    }
   }
+  
 
 ];
