@@ -18,7 +18,7 @@ async function updateOpenings(email: string, env: Env) {
   } catch (error: any) {
     throw {
       success: false,
-      data: { message: `Erro ao tentar atualizar a base de dados: ${error.message}` },
+      data: { message: `Erro ao tentar atualizar openings do usuário ${email} na base de dados: ${error.message}` },
       code: 500,
     };
   }

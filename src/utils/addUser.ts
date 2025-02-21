@@ -17,26 +17,24 @@ async function addUser(
 
     const query = `
     INSERT INTO users (email, utm_source, utm_medium, utm_campaign, utm_channel, openings, streak, last_open_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
   `;
 
 
-    const last_open_date = getNow()
     const streak = 1
     const openings = 1
 
     try {
         const result = await env.D1_DB
             .prepare(query)
-            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, openings, streak, last_open_date)
+            .bind(email, utm_source, utm_medium, utm_campaign, utm_channel, openings, streak)
             .run();
 
         if (!result.success) {
             throw new Error("Erro ao inserir usuário");
         }
 
-        console.log("Usuário inserido na tabela com sucesso!");
-        return { success: true, email, utm_source,utm_medium,utm_campaign, utm_channel, openings, streak, last_open_date };
+        return { success: true, email, utm_source,utm_medium,utm_campaign, utm_channel, openings, streak};
     } catch (error: any) {
         throw { success: false, data: { message: `Erro ao inserir usuário: ${error.message}` }, code: 500 };
     }

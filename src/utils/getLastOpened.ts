@@ -3,9 +3,12 @@ import { LastOpenedResponse } from "models/types";
 
 
 export async function getLastOpened(email: string, env: Env): Promise<LastOpenedResponse> {
+  
+  const query = "SELECT last_open_date FROM users WHERE email = ?;"
+
   try {
     const result = await env.D1_DB
-      .prepare("SELECT last_open_date FROM users WHERE email = ?;")
+      .prepare(query)
       .bind(email)
       .first<{ last_open_date: string }>();
 

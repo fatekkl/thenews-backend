@@ -3,9 +3,12 @@ import { Env } from "../../worker-configuration";
 
 
 export async function getOpenings(email: string, env: Env) {
+
+  const query = "SELECT openings FROM users WHERE email = ?;"
+
   try {
     const row = await env.D1_DB
-      .prepare("SELECT openings FROM users WHERE email = ?;")
+      .prepare(query)
       .bind(email)
       .first<{ openings: number }>();
 

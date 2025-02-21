@@ -7,7 +7,7 @@ async function updateLastOpened(email: string, date: string, env: Env) {
     const result = await env.D1_DB.prepare(query).bind(date, email).run();
 
     if (!result.success) {
-      throw new Error("A atualização não foi realizada com sucesso.");
+      throw new Error(`Atualização falhou: ${result.error}`);
     }
 
     return { 

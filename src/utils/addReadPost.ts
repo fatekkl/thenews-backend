@@ -6,13 +6,14 @@ export default async function addReadPost(email: string, resource_id: string, en
     try {
         // Verifica se o post existe no banco
         const post = await getPost(resource_id, env);
+        const query = "SELECT read_posts FROM users WHERE email = ?;"
         if (!post) {
             throw new Error(`Post ${resource_id} não encontrado.`);
         }
 
         // Busca o read_posts atual do usuário
         const userQuery = await env.D1_DB
-            .prepare("SELECT read_posts FROM users WHERE email = ?;")
+            .prepare(query)
             .bind(email)
             .first();
 

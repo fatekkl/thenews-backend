@@ -21,11 +21,7 @@ export default async function updateStreak(email: string, env: Env) {
         const totalDiff = differenceInDays(currentDate, lastOpened);
         const sundaysCount = countSundaysBetween(lastOpened, currentDate);
         const activeGap = totalDiff - sundaysCount;
-        console.log(`${activeGap}: activeGap \n totalDiff: ${totalDiff}`)
-
-        console.log(`last_open_date: ${lastOpened}`);
-        console.log(`currentDate: ${currentDate}`);
-        console.log(`totalDiff: ${totalDiff}, sundaysCount: ${sundaysCount}, activeGap: ${activeGap}`);
+        
 
         let newStreak = 1;
 
@@ -36,20 +32,19 @@ export default async function updateStreak(email: string, env: Env) {
         } else {
             newStreak = 0;
         }
-        console.log("streak pré update:", previousStreak)
-        console.log("streak pós update:",newStreak)
+       
 
         const updateQuery = `
             UPDATE users 
-            SET streak = ?, last_open_date = ? 
+            SET streak = ?, last_open_date = CURRENT_TIMESTAMP
             WHERE email = ?;
         `;
 
         
-        await env.D1_DB.prepare(updateQuery).bind(newStreak, currentDate, email).run();
+        await env.D1_DB.prepare(updateQuery).bind(newStreak, email).run();
 
         return {success: true, streak: newStreak }
     } catch (error: any) {
-        throw new Error(`Falha ao tentar capturar streak de ${email}: ${error.message}`);
+        throw new Error(`Falha ao tentar atualizar streak de ${email}: ${error.message}`);
     }
 }

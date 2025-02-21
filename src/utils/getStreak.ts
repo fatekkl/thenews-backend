@@ -3,9 +3,11 @@ import { Env } from "../../worker-configuration";
 
 
 export async function getStreak(email: string, env: Env): Promise<StreakResponse> {
+
+  const query = "SELECT streak FROM users WHERE email = ?;"
   try {
     const row = await env.D1_DB
-      .prepare("SELECT streak FROM users WHERE email = ?;")
+      .prepare(query)
       .bind(email)
       .first<{ streak: number }>();
 
@@ -15,6 +17,6 @@ export async function getStreak(email: string, env: Env): Promise<StreakResponse
 
     return { success: true, streak: row.streak };
   } catch (error: any) {
-    throw new Error(`Falha ao tentar capturar last_open_date de ${email}: ${error.message}`);
+    throw new Error(`Falha ao tentar capturar streak de ${email}: ${error.message}`);
   }
 }
