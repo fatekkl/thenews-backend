@@ -20,7 +20,6 @@ export interface User {
     utm_channel: string;
     openings: number;
     streak: number
-    last_open_date: string
 }
 
 
