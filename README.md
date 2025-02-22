@@ -77,7 +77,7 @@ Assim, a aplicação não vai utilizar o Hono.
 ## ⚙️ **Configuração do Projeto**
 ### **1️⃣ Clone o repositório**
 ```sh
-git clone https://github.com/seu-usuario/thenews-backend.git
+git clone https://github.com/fatekkl/thenews-backend.git
 cd thenews-backend
 ```
 
