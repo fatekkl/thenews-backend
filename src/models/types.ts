@@ -23,6 +23,12 @@ export interface User {
 }
 
 
+export interface ReadPost {
+    postId: string;
+    created_at: string;
+  }
+
+
 export interface LastOpenedResponse {
     success: boolean;
     last_open_date: string;

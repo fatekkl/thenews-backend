@@ -1,3 +1,4 @@
+import safeJSONParse from "services/safeJsonParse";
 import { Env } from "../../worker-configuration";
 
 
@@ -10,7 +11,7 @@ export default async function getReadPosts(email: string, env: Env) {
         const result = await env.D1_DB.prepare(query).bind(email).all()
 
 
-        const readPostsParsed = JSON.parse(result.results[0].read_posts as string)
+        const readPostsParsed = safeJSONParse(result.results[0].read_posts as string, [])
 
         return readPostsParsed
     } catch (error) {

@@ -58,6 +58,16 @@ async function handleCache(c: any, handler: Function) {
   return data;
 }
 
+
+function measureTime<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  const start = Date.now();
+  return fn().then((result) => {
+    const duration = Date.now() - start;
+    console.log(`[${label}] demorou ${duration}ms`);
+    return result;
+  });
+}
+
 // ROTA "/"
 app.get("/", async (c) =>
   handleCache(c, async () => {
@@ -74,42 +84,47 @@ app.get("/", async (c) =>
 
     const env = c.env;
 
-    // 1) addPost e checkEmail podem rodar em paralelo
+    // 1) addPost e checkEmail podem rodar em paralelo.
+    //    Cada chamada é envolvida em measureTime para logar duração.
     const [post, emailExists] = await Promise.all([
-      addPost(env, resource_id),
-      checkEmail(email, env),
+      measureTime(() => addPost(env, resource_id), "addPost"),
+      measureTime(() => checkEmail(email, env), "checkEmail"),
     ]);
 
     if (emailExists) {
-
-      const [updatedOpenings] = await Promise.all([
-        updateOpenings(email, env),     // retorna algo (openings)
-        updateStreak(email, env),
-        updateHigherStreak(email, env),
-        updateLastOpened(email, getNow(), env),
-        addReadPost(email, resource_id, env),
+      // 2) Para usuário existente, paralelizamos updates.
+      //    Envolvemos cada função em measureTime para medir individualmente.
+      const [
+        updatedOpenings,
+        _updateStreak,
+        _updateHigherStreak,
+        _updateLastOpened,
+        _addReadPost,
+      ] = await Promise.all([
+        measureTime(() => updateOpenings(email, env), "updateOpenings"),
+        measureTime(() => updateStreak(email, env), "updateStreak"),
+        measureTime(() => updateHigherStreak(email, env), "updateHigherStreak"),
+        measureTime(() => updateLastOpened(email, getNow(), env), "updateLastOpened"),
+        measureTime(() => addReadPost(email, resource_id, env), "addReadPost"),
       ]);
 
-      // Agora temos updatedOpenings, e as demais operações também foram concluídas.
       return c.json({
         success: true,
         data: { openings: updatedOpenings.data },
       });
     } else {
-      // 3) Para novo usuário, podemos rodar tudo em paralelo também.
-      // Precisamos do retorno de registerUser para enviar "user".
-      const [user] = await Promise.all([
-        registerUser(env, email, "", "", "", ""), // retorna algo (user)
-        updateStreak(email, env),
-        updateHigherStreak(email, env),
-        addReadPost(email, resource_id, env),
+      // 3) Para novo usuário, mesma lógica de paralelização + logs.
+      const [user, _updateStreak, _updateHigherStreak, _addReadPost] = await Promise.all([
+        measureTime(() => registerUser(env, email, "", "", "", ""), "registerUser"),
+        measureTime(() => updateStreak(email, env), "updateStreak"),
+        measureTime(() => updateHigherStreak(email, env), "updateHigherStreak"),
+        measureTime(() => addReadPost(email, resource_id, env), "addReadPost"),
       ]);
 
       return c.json({ success: true, user, post });
     }
   })
 );
-
 
 // ROTA "/add_user"
 app.get("/add_user", async (c) =>
