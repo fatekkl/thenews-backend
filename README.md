@@ -246,6 +246,8 @@ Uma pequena tabela, com anotações sobre tarefas que tenho que fazer, para minh
 | ❌ Queries SQL poderiam ser mais otimizadas | **Usei prepared statements** (`prepare().all()`) para segurança e performance. |
 | ❌ O streak não era atualizado corretamente em algumas situações | **Implementei um reset automático de streak** caso o usuário não acessasse em 24 horas. |
 | ❌ Cloudflare D1 tem limitações comparado ao SQLite tradicional | **Evitei operações complexas como JOINs pesados** e foquei em consultas mais diretas. |
+| ❌ Respostas muito lentas devido a distância até o servidor | Paralelizei as funções, diminuindo o tempo de resposta em cerca de 50ms. |
+
 
 ---
 
@@ -334,7 +336,8 @@ CREATE TABLE IF NOT EXISTS posts (
 ✔ Validação de cache no Cloudflare Workers.  
 
 ✅ **Testes de Performance**  
-✔ Comparação do tempo de resposta com e sem cache → **A 2ª requisição foi até 1.5x mais rápida**.  
+✔ Comparação do tempo de resposta com e sem cache → **A 2ª requisição foi até 1.5x mais rápida**.
+✔ Comparação do tempo de resposta paralelizado → **A resposta paralelizada melhorou o tempo de resposta em 0.2x**.  
 ✔ Simulação de requisições simultâneas para verificar carga no D1.  
 
 ---
@@ -361,7 +364,8 @@ CREATE TABLE IF NOT EXISTS posts (
 
 📌 **Melhorias futuras:**  
 - **Melhorar logs detalhados** para debugging mais eficiente.  
-- **Implementar testes automatizados** para evitar regressões.  
+- **Implementar testes automatizados** para evitar regressões.
+- **Implementar um LoadBalancer** para melhora do tempo de resposta.  
 - **Explorar PostgreSQL** caso a escala aumente significativamente.  
 
 ---
