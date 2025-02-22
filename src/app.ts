@@ -87,6 +87,7 @@ app.get("/", async (c) =>
     } else {
       const user = await registerUser(env, email, "", "", "", "");
       await updateStreak(email, env);
+      await updateHigherStreak(email, env)
       await addReadPost(email, resource_id, env);
 
       return c.json({ success: true, user, post });
