@@ -11,7 +11,7 @@ export async function getUser(email: string, env: Env) {
       .first()
 
     if (!result ) {
-      throw new Error(`Post ${email} não encontrado.`);
+      throw new Error(`Usuário ${email} não encontrado.`);
     }
 
     return result.email
