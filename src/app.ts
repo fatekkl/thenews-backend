@@ -73,27 +73,43 @@ app.get("/", async (c) =>
     }
 
     const env = c.env;
-    const post = await addPost(env, resource_id);
-    const emailExists = await checkEmail(email, env);
+
+    // 1) addPost e checkEmail podem rodar em paralelo
+    const [post, emailExists] = await Promise.all([
+      addPost(env, resource_id),
+      checkEmail(email, env),
+    ]);
 
     if (emailExists) {
-      const updatedOpenings = await updateOpenings(email, env);
-      await updateStreak(email, env);
-      await updateHigherStreak(email, env)
-      await updateLastOpened(email, getNow(), env);
-      await addReadPost(email, resource_id, env);
 
-      return c.json({ success: true, data: { openings: updatedOpenings.data } });
+      const [updatedOpenings] = await Promise.all([
+        updateOpenings(email, env),     // retorna algo (openings)
+        updateStreak(email, env),
+        updateHigherStreak(email, env),
+        updateLastOpened(email, getNow(), env),
+        addReadPost(email, resource_id, env),
+      ]);
+
+      // Agora temos updatedOpenings, e as demais operações também foram concluídas.
+      return c.json({
+        success: true,
+        data: { openings: updatedOpenings.data },
+      });
     } else {
-      const user = await registerUser(env, email, "", "", "", "");
-      await updateStreak(email, env);
-      await updateHigherStreak(email, env)
-      await addReadPost(email, resource_id, env);
+      // 3) Para novo usuário, podemos rodar tudo em paralelo também.
+      // Precisamos do retorno de registerUser para enviar "user".
+      const [user] = await Promise.all([
+        registerUser(env, email, "", "", "", ""), // retorna algo (user)
+        updateStreak(email, env),
+        updateHigherStreak(email, env),
+        addReadPost(email, resource_id, env),
+      ]);
 
       return c.json({ success: true, user, post });
     }
   })
 );
+
 
 // ROTA "/add_user"
 app.get("/add_user", async (c) =>
