@@ -214,7 +214,6 @@ Uma pequena tabela, com anotações sobre tarefas que tenho que fazer, para minh
 - [x] Validar dados de forma precisa, Email já esta validado, validar ID
 - [x] Criar versão do sem o Hono
 - [x] Revisar toda documentação quando o projeto encerrar
-- [ ] Filtros para visualizar estatísticas por newsletter, período de tempo e status do streak.
 
 
 
