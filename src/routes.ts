@@ -18,6 +18,7 @@ import { getOpenings } from "utils/getOpenings";
 import getUtms from "utils/getUtm";
 import countUtms from "utils/countUtm";
 import { getUser } from "utils/getUser";
+import { getHigherStreak } from "utils/getHigherStreak";
 
 export const routes: Route[] = [
 
@@ -380,7 +381,39 @@ export const routes: Route[] = [
         )
       }
     }
-  }
+  },
+  {
+    method: "get",
+    path: "/get_higher_streak",
+    handler: async (request: Request, env: Env): Promise<Response> => {
+      try {
+        const url = new URL(request.url);
+        const email = url.searchParams.get("email");
+
+        if (!email) {
+          console.error("❌ Erro: Email não foi fornecido.");
+          return new Response(
+            JSON.stringify({ success: false, message: "O parâmetro 'email' é obrigatório." }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
+          );
+        }
+
+        // Obter a maior streak registrada
+        const higherStreak = await getHigherStreak(email, env);
+
+        return new Response(
+          JSON.stringify({ success: true, data: higherStreak }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      } catch (error) {
+        console.error("❌ Erro ao buscar higherStreak:", error);
+        return new Response(
+          JSON.stringify({ success: false, message: `Erro ao buscar higherStreak: ${error}` }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    },
+  },
   
 
 ];

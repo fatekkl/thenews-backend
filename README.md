@@ -282,7 +282,8 @@ CREATE TABLE IF NOT EXISTS users (
   openings INTEGER DEFAULT 0,
   streak INTEGER DEFAULT 0,
   last_open_date TEXT,
-  read_posts JSON
+  read_posts JSON,
+  higher_streak INTEGER DEFAULT 0
 );
 ```
 
@@ -302,7 +303,7 @@ CREATE TABLE IF NOT EXISTS posts (
 📌 **Fluxo de execução quando um usuário abre um post:**
 1. **Verifica se o post já existe** → Se não, cadastra no banco.  
 2. **Verifica se o usuário já existe**:
-   - Se **sim**, atualiza `openings`, `streak` e `read_posts`.  
+   - Se **sim**, atualiza `openings`, `streak`, `higher_streak` e `read_posts`.  
    - Se **não**, cadastra o usuário e inicia os contadores.  
 3. **Cacheia a resposta no Cloudflare Workers para evitar consultas repetitivas**.
 

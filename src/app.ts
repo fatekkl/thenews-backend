@@ -18,6 +18,8 @@ import { getOpenings } from "utils/getOpenings";
 import getUtms from "utils/getUtm";
 import countUtms from "utils/countUtm";
 import { getUser } from "utils/getUser";
+import updateHigherStreak from "utils/updateHigherStreak";
+import { getHigherStreak } from "utils/getHigherStreak";
 
 // Criamos o app Hono
 const app = new Hono<{ Bindings: Env }>();
@@ -77,6 +79,7 @@ app.get("/", async (c) =>
     if (emailExists) {
       const updatedOpenings = await updateOpenings(email, env);
       await updateStreak(email, env);
+      await updateHigherStreak(email, env)
       await updateLastOpened(email, getNow(), env);
       await addReadPost(email, resource_id, env);
 
@@ -216,6 +219,29 @@ app.get("/get_user", async (c) =>
   })
 );
 
+app.get("get_higher_streak", async (c) =>
+  handleCache(c, async () => {
+    try {
+      const emailInput = c.req.query("email")
+
+      if (!emailInput) {
+        console.error("❌ Erro: Email não foi fornecido.");
+        return c.json(
+          { success: false, message: "O parâmetro 'email' é obrigatório." },
+          400
+        );
+      }
+
+      const env = c.env
+
+      const higherStreak = await getHigherStreak(emailInput, env)
+
+      return c.json({success: true, data: higherStreak});
+    } catch (error) {
+      console.error("❌ Erro ao buscar higherStreak:", error)
+    }
+  })
+)
 
 // Exporta o app Hono
 export default app;
