@@ -129,7 +129,8 @@ npx wrangler d1 execute thenews-database --local --command "
     openings INTEGER DEFAULT 0,
     streak INTEGER DEFAULT 0,
     last_open_date TEXT,
-    read_posts JSON
+    read_posts JSON,
+    higher_streak INTEGER DEFAULT 0
   );
 "
 ```
