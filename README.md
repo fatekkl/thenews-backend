@@ -2,8 +2,16 @@
 
 Este é o backend para o case **TheNews**, responsável por processar requisições recebidas periodicamente de um webhook, armazenando informações de usuários e posts no banco de dados **Cloudflare D1**. Implementando também, um sistema de Streak, para a sequência de aberturas da *newsletter*.
 
+
+## Links 📎
+
+Backend: https://thenews-backend.mathtml-1105.workers.dev/
+
+
+
 ## 📌 **Sumário**
 - [📰 TheNews Backend](#-thenews-backend)
+  - [Links 📎](#links-)
   - [📌 **Sumário**](#-sumário)
   - [📌 **Visão Geral**](#-visão-geral)
   - [Hono](#hono)
