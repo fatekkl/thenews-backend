@@ -114,10 +114,8 @@ app.get("/", async (c) =>
       });
     } else {
       // 3) Para novo usuário, mesma lógica de paralelização + logs.
-      const [user, _updateStreak, _updateHigherStreak, _addReadPost] = await Promise.all([
+      const [user, _addReadPost] = await Promise.all([
         measureTime(() => registerUser(env, email, "", "", "", ""), "registerUser"),
-        measureTime(() => updateStreak(email, env), "updateStreak"),
-        measureTime(() => updateHigherStreak(email, env), "updateHigherStreak"),
         measureTime(() => addReadPost(email, resource_id, env), "addReadPost"),
       ]);
 

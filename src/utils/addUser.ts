@@ -20,7 +20,7 @@ async function addUser(
   `;
 
 
-    const streak = 1
+    const streak = 0
     const openings = 1
 
     try {
