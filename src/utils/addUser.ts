@@ -21,7 +21,7 @@ async function addUser(
 
 
     const streak = 0
-    const openings = 1
+    const openings = 0
 
     try {
         const result = await env.D1_DB
